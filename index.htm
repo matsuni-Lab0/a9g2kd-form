@@ -49,36 +49,31 @@
     function startScanner() {
       const html5QrCode = new Html5Qrcode("reader");
 
-      html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: 250,
-          formatsToSupport: [
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E
-          ],
-          experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
-        }
-        },
-        (decodedText, decodedResult) => {
-          html5QrCode.stop();
-          document.getElementById("reader").innerHTML = "";
-          document.getElementById("resultSection").style.display = "block";
-          document.getElementById("scanResult").textContent = decodedText;
+     html5QrCode.start(
+  { facingMode: "environment" },
+  {
+    fps: 10,
+    qrbox: 250,
+    formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13],  // ★JANコードのみ
+    experimentalFeatures: {
+      useBarCodeDetectorIfSupported: true
+    }
+  },
+  (decodedText, decodedResult) => {
+    html5QrCode.stop();
+    document.getElementById("reader").innerHTML = "";
+    document.getElementById("resultSection").style.display = "block";
+    document.getElementById("scanResult").textContent = decodedText;
 
-          const formUrlBase = "https://docs.google.com/forms/d/e/1FAIpQLSfcqGbVrhTtwpw1LU-k2qdSRBXqMH_3x-bt5SJGJo91Nu_LUA/viewform?usp=pp_url&entry.1123508767=";
-          document.getElementById("formLink").href = formUrlBase + encodeURIComponent(decodedText);
-        },
-        (errorMessage) => {
-          // 読み取り失敗時（無視）
-        }
-      ).catch(err => {
-        alert("カメラの起動に失敗しました: " + err);
-      });
+    const formUrlBase = "https://docs.google.com/forms/d/e/1FAIpQLSfcqGbVrhTtwpw1LU-k2qdSRBXqMH_3x-bt5SJGJo91Nu_LUA/viewform?usp=pp_url&entry.1123508767=";
+    document.getElementById("formLink").href = formUrlBase + encodeURIComponent(decodedText);
+  },
+  (errorMessage) => {
+    // スキャンエラー処理（無視してOK）
+  }
+).catch(err => {
+  alert("カメラの起動に失敗しました: " + err);
+});
     }
   </script>
 </body>
