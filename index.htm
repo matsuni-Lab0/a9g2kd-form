@@ -1,84 +1,81 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>バーコード専用読み取りフォーム</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>認証付きバーコード読取ページ</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; margin: 20px; }
-    #reader { width: 300px; margin: 20px auto; }
-    #protected, #reader, #submitSection { display: none; }
-    input[type="password"] { padding: 10px; font-size: 16px; }
-    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #scanner, #resultSection {
+      display: none;
+      margin-top: 20px;
+    }
   </style>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
-  <h2>パスワード認証</h2>
-  <div id="authSection">
-    <input type="password" id="password" placeholder="4桁のパスワード">
-    <button onclick="checkPassword()">認証</button>
-    <p id="authError" style="color: red;"></p>
+  <h2>職員認証ページ</h2>
+  <p>4桁のパスワードを入力してください。</p>
+  <input type="password" id="password" maxlength="4" />
+  <button onclick="checkPassword()">認証</button>
+
+  <div id="scanner">
+    <h3>バーコードをスキャンしてください</h3>
+    <div id="reader" style="width:300px; margin: auto;"></div>
   </div>
 
-  <div id="protected">
-    <h2>バーコード読み取り</h2>
-    <div id="reader"></div>
-    <p id="result"></p>
-    <div id="submitSection">
-      <button onclick="submitForm()">Googleフォームに進む</button>
-    </div>
+  <div id="resultSection">
+    <h4>読取結果:</h4>
+    <p id="scanResult"></p>
+    <a id="formLink" href="#" target="_blank">→ フォームに進む</a>
   </div>
 
   <script>
-    const correctPassword = "0000"; // パスワード
-    let scannedCode = "";
-
     function checkPassword() {
-      const entered = document.getElementById("password").value;
-      if (entered === correctPassword) {
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("protected").style.display = "block";
+      const input = document.getElementById("password").value;
+      if (input === "0000") {
+        document.getElementById("scanner").style.display = "block";
         startScanner();
       } else {
-        document.getElementById("authError").innerText = "パスワードが違います";
+        alert("パスワードが違います。");
       }
     }
 
     function startScanner() {
       const html5QrCode = new Html5Qrcode("reader");
-      const config = {
-        fps: 10,
-        qrbox: 250,
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.CODE_128,
-      　　Html5QrcodeSupportedFormats.CODE_39,
-      　　Html5QrcodeSupportedFormats.EAN_13
-        ]
-      };
 
       html5QrCode.start(
         { facingMode: "environment" },
-        config,
+        {
+          fps: 10,
+          qrbox: 250,
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E
+          ]
+        },
         (decodedText, decodedResult) => {
-          console.log(`バーコード読み取り成功: ${decodedText}`);
-          document.getElementById("result").innerText = "読み取り成功: " + decodedText;
-          scannedCode = decodedText;
-          html5QrCode.stop(); // スキャン停止
-          document.getElementById("submitSection").style.display = "block";
+          html5QrCode.stop();
+          document.getElementById("reader").innerHTML = "";
+          document.getElementById("resultSection").style.display = "block";
+          document.getElementById("scanResult").textContent = decodedText;
+
+          const formUrlBase = "https://docs.google.com/forms/d/e/1FAIpQLSfcqGbVrhTtwpw1LU-k2qdSRBXqMH_3x-bt5SJGJo91Nu_LUA/viewform?usp=pp_url&entry.1123508767=";
+          document.getElementById("formLink").href = formUrlBase + encodeURIComponent(decodedText);
         },
         (errorMessage) => {
-          // 読み取り失敗時の処理（オプション）
+          // 読み取り失敗時（無視）
         }
-      );
-    }
-
-    function submitForm() {
-      // ↓以下をマスターのフォームURLとentry番号に置き換えてください
-      const entryParam = encodeURIComponent(scannedCode);
-      const formUrlBase = "https://docs.google.com/forms/d/e/1FAIpQLSfcqGbVrhTtwpw1LU-k2qdSRBXqMH_3x-bt5SJGJo91Nu_LUA/viewform?usp=pp_url&entry.1123508767=";
-      window.location.href = formUrl;
+      ).catch(err => {
+        alert("カメラの起動に失敗しました: " + err);
+      });
     }
   </script>
 </body>
