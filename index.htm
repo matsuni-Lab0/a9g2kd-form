@@ -1,60 +1,75 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex">
-  <title>バーコード認証ページ</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>認証付きバーコード読取ページ</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #auth-section, #scanner-section { margin-top: 20px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #scanner, #resultSection {
+      display: none;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2>職員アンケート認証</h2>
+  <h2>職員認証ページ</h2>
+  <p>4桁のパスワードを入力してください。</p>
+  <input type="password" id="password" maxlength="4" />
+  <button onclick="checkPassword()">認証</button>
 
-  <div id="auth-section">
-    <label>パスワード（4桁数字）：</label>
-    <input type="password" id="password" maxlength="4">
-    <button onclick="checkPassword()">認証</button>
-    <p id="auth-error" style="color:red;"></p>
+  <div id="scanner">
+    <h3>バーコードまたはQRコードをスキャンしてください</h3>
+    <div id="reader" style="width:300px; margin: auto;"></div>
   </div>
 
-  <div id="scanner-section" style="display:none;">
-    <h3>バーコードを読み取ってください</h3>
-    <div id="reader" style="width:300px;"></div>
-    <p>読み取ったID：<span id="result"></span></p>
+  <div id="resultSection">
+    <h4>読取結果:</h4>
+    <p id="scanResult"></p>
+    <a id="formLink" href="#" target="_blank">→ フォームに進む</a>
   </div>
 
   <script>
     function checkPassword() {
-      const pw = document.getElementById("password").value;
-      if (pw === "0000") {
-        document.getElementById("auth-section").style.display = "none";
-        document.getElementById("scanner-section").style.display = "block";
+      const input = document.getElementById("password").value;
+      if (input === "0000") {
+        document.getElementById("scanner").style.display = "block";
         startScanner();
       } else {
-        document.getElementById("auth-error").textContent = "パスワードが違います";
+        alert("パスワードが違います。");
       }
     }
 
     function startScanner() {
       const html5QrCode = new Html5Qrcode("reader");
-      const config = { fps: 10, qrbox: 250 };
 
       html5QrCode.start(
-        { facingMode: "environment" },
-        config,
+        { facingMode: "environment" }, // 背面カメラ
+        {
+          fps: 10,
+          qrbox: 250
+        },
         (decodedText, decodedResult) => {
-          document.getElementById("result").textContent = decodedText;
           html5QrCode.stop();
+          document.getElementById("reader").innerHTML = "";
+          document.getElementById("resultSection").style.display = "block";
+          document.getElementById("scanResult").textContent = decodedText;
+
+          // フォームURLにIDを追加（ここは適宜変更してください）
+          const formUrlBase = "https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url&entry.1234567890=";
+          document.getElementById("formLink").href = formUrlBase + encodeURIComponent(decodedText);
         },
         (errorMessage) => {
-          // 無視してよい読み取りエラー
+          // スキャンエラーは無視してOK
         }
       ).catch(err => {
-        console.error("読み取り開始エラー", err);
+        alert("カメラの起動に失敗しました: " + err);
       });
     }
   </script>
