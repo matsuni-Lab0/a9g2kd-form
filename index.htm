@@ -62,7 +62,7 @@
           document.getElementById("scanResult").textContent = decodedText;
 
           // フォームURLにIDを追加（ここは適宜変更してください）
-          const formUrlBase = "https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url&entry.1234567890=";
+          const formUrlBase = "https://docs.google.com/forms/d/e/1FAIpQLSfcqGbVrhTtwpw1LU-k2qdSRBXqMH_3x-bt5SJGJo91Nu_LUA/viewform?usp=pp_url&entry.1234567890=";
           document.getElementById("formLink").href = formUrlBase + encodeURIComponent(decodedText);
         },
         (errorMessage) => {
