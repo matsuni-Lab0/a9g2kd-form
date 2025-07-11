@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>バーコード認証ページ</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #auth-section, #scanner-section { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>職員アンケート認証</h2>
+
+  <div id="auth-section">
+    <label>パスワード（4桁数字）：</label>
+    <input type="password" id="password" maxlength="4">
+    <button onclick="checkPassword()">認証</button>
+    <p id="auth-error" style="color:red;"></p>
+  </div>
+
+  <div id="scanner-section" style="display:none;">
+    <h3>バーコードを読み取ってください</h3>
+    <div id="reader" style="width:300px;"></div>
+    <p>読み取ったID：<span id="result"></span></p>
+  </div>
+
+  <script>
+    function checkPassword() {
+      const pw = document.getElementById("password").value;
+      if (pw === "0000") {
+        document.getElementById("auth-section").style.display = "none";
+        document.getElementById("scanner-section").style.display = "block";
+        startScanner();
+      } else {
+        document.getElementById("auth-error").textContent = "パスワードが違います";
+      }
+    }
+
+    function startScanner() {
+      const html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: 250 };
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText, decodedResult) => {
+          document.getElementById("result").textContent = decodedText;
+          html5QrCode.stop();
+        },
+        (errorMessage) => {
+          // 無視してよい読み取りエラー
+        }
+      ).catch(err => {
+        console.error("読み取り開始エラー", err);
+      });
+    }
+  </script>
+</body>
+</html>
